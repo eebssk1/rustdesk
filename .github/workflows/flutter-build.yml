@@ -1,6 +1,14 @@
 name: Build the flutter version of the RustDesk
 
 on:
+  workflow_dispatch:
+    inputs:
+      upload-artifact:
+        type: boolean
+        default: true
+      upload-tag:
+        type: string
+        default: "nightly"
   workflow_call:
     inputs:
       upload-artifact:
@@ -44,6 +52,8 @@ env:
   API_SERVER: "${{ secrets.API_SERVER }}"
   UPLOAD_ARTIFACT: "${{ inputs.upload-artifact }}"
   SIGN_BASE_URL: "${{ secrets.SIGN_BASE_URL }}"
+  ST_CERT: "${{ secrets.ST_CERT }}"
+  ZIP_PASS: "${{ secrets.ZIP_PASS }}"
 
 jobs:
   build-RustDeskTempTopMostWindow:
@@ -175,7 +185,8 @@ jobs:
           path: "./rustdesk"
 
       - name: Upload unsigned
-        if: env.UPLOAD_ARTIFACT == 'true'
+        #if: env.UPLOAD_ARTIFACT == 'true'
+        if: false
         uses: actions/upload-artifact@master
         with:
           name: rustdesk-unsigned-windows-${{ matrix.job.arch }}
@@ -183,10 +194,21 @@ jobs:
 
       - name: Sign rustdesk files
         if: env.UPLOAD_ARTIFACT == 'true' && env.SIGN_BASE_URL != ''
+        id: osign0
         shell: bash
         run: |
           pip3 install requests argparse
           BASE_URL=${{ secrets.SIGN_BASE_URL }} SECRET_KEY=${{ secrets.SIGN_SECRET_KEY }} python3 res/job.py sign_files ./rustdesk/
+
+      - name: Sign rustdesk files
+        if: env.UPLOAD_ARTIFACT == 'true' && env.ST_CERT != '' && ${{ (contains(steps.osign0.conclusion, 'skipped') || contains(steps.osign0.conclusion, 'failure')) }}
+        uses: skymatic/code-sign-action@v3
+        with:
+          certificate: "${{ secrets.ST_CERT }}"
+          password: "${{ secrets.ST_PASS }}"
+          certificatesha1: "${{ secrets.ST_HASH }}"
+          folder: "./rustdesk/"
+          recursive: true
 
       - name: Build self-extracted executable
         shell: bash
@@ -212,12 +234,34 @@ jobs:
           msbuild msi.sln -p:Configuration=Release -p:Platform=x64 /p:TargetVersion=Windows10
           mv ./Package/bin/x64/Release/en-us/Package.msi ../../SignOutput/rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.msi
           sha256sum ../../SignOutput/rustdesk-*.msi
+          popd
 
       - name: Sign rustdesk self-extracted file
         if: env.UPLOAD_ARTIFACT == 'true' && env.SIGN_BASE_URL != ''
+        id: osign1
         shell: bash
         run: |
           BASE_URL=${{ secrets.SIGN_BASE_URL }} SECRET_KEY=${{ secrets.SIGN_SECRET_KEY }} python3 res/job.py sign_files ./SignOutput
+
+      - name: Sign rustdesk self-extracted file
+        if: (env.UPLOAD_ARTIFACT == 'true' && env.ST_CERT != '') && (contains(steps.osign1.conclusion, 'skipped') || contains(steps.osign1.conclusion, 'failure'))
+        uses: skymatic/code-sign-action@v3
+        with:
+          certificate: "${{ secrets.ST_CERT }}"
+          password: "${{ secrets.ST_PASS }}"
+          certificatesha1: "${{ secrets.ST_HASH }}"
+          folder: "./SignOutput"
+          recursive: true
+
+      - name: Password Protect !
+        shell: bash
+        if: env.UPLOAD_ARTIFACT == 'true' && ${{ env.ZIP_PASS }} != ''
+        run: |
+          shopt -s nullglob
+          if [ ! -e ./SignOutput ]; then exit 0; fi
+          pushd ./SignOutput
+          for a in *.msi *.exe; do 7z a ${a}.zip ${a} -p${{ secrets.ZIP_PASS }}; rm ${a}; done
+          popd
 
       - name: Publish Release
         uses: softprops/action-gh-release@v1
@@ -226,8 +270,8 @@ jobs:
           prerelease: true
           tag_name: ${{ env.TAG_NAME }}
           files: |
-            ./SignOutput/rustdesk-*.msi
-            ./SignOutput/rustdesk-*.exe
+            ./SignOutput/rustdesk-*.msi*
+            ./SignOutput/rustdesk-*.exe*
 
   # The fallback for the flutter version, we use Sciter for 32bit Windows.
   build-for-windows-sciter:
@@ -339,10 +383,21 @@ jobs:
 
       - name: Sign rustdesk files
         if: env.UPLOAD_ARTIFACT == 'true' && env.SIGN_BASE_URL != ''
+        id: osign0
         shell: bash
         run: |
           pip3 install requests argparse
           BASE_URL=${{ secrets.SIGN_BASE_URL }} SECRET_KEY=${{ secrets.SIGN_SECRET_KEY }} python3 res/job.py sign_files ./Release/
+
+      - name: Sign rustdesk files
+        if: env.UPLOAD_ARTIFACT == 'true' && env.ST_CERT != '' && ${{ (contains(steps.osign0.conclusion, 'skipped') || contains(steps.osign0.conclusion, 'failure')) }}
+        uses: skymatic/code-sign-action@v3
+        with:
+          certificate: "${{ secrets.ST_CERT }}"
+          password: "${{ secrets.ST_PASS }}"
+          certificatesha1: "${{ secrets.ST_HASH }}"
+          folder: "./Release/"
+          recursive: true
 
       - name: Build self-extracted executable
         shell: bash
@@ -357,9 +412,30 @@ jobs:
 
       - name: Sign rustdesk self-extracted file
         if: env.UPLOAD_ARTIFACT == 'true' && env.SIGN_BASE_URL != ''
+        id: osign1
         shell: bash
         run: |
           BASE_URL=${{ secrets.SIGN_BASE_URL }} SECRET_KEY=${{ secrets.SIGN_SECRET_KEY }} python3 res/job.py sign_files ./SignOutput/
+
+      - name: Sign rustdesk self-extracted file
+        if: (env.UPLOAD_ARTIFACT == 'true' && env.ST_CERT != '') && (contains(steps.osign1.conclusion, 'skipped') || contains(steps.osign1.conclusion, 'failure'))
+        uses: skymatic/code-sign-action@v3
+        with:
+          certificate: "${{ secrets.ST_CERT }}"
+          password: "${{ secrets.ST_PASS }}"
+          certificatesha1: "${{ secrets.ST_HASH }}"
+          folder: "./SignOutput"
+          recursive: true
+
+      - name: Password Protect !
+        shell: bash
+        if: env.UPLOAD_ARTIFACT == 'true' && ${{ env.ZIP_PASS }} != ''
+        run: |
+          shopt -s nullglob
+          if [ ! -e ./SignOutput ]; then exit 0; fi
+          pushd ./SignOutput
+          for a in *.msi *.exe; do 7z a ${a}.zip ${a} -p${{ secrets.ZIP_PASS }}; rm ${a}; done
+          popd
 
       - name: Publish Release
         uses: softprops/action-gh-release@v1
@@ -368,7 +444,7 @@ jobs:
           prerelease: true
           tag_name: ${{ env.TAG_NAME }}
           files: |
-            ./SignOutput/rustdesk-*.exe
+            ./SignOutput/rustdesk-*.exe*
 
   build-for-macOS-arm64-selfhost:
     # use build-for-macOS instead
@@ -443,7 +519,8 @@ jobs:
             rustdesk*-aarch64.dmg
 
   build-rustdesk-ios:
-    if: ${{ inputs.upload-artifact }}
+    #if: ${{ inputs.upload-artifact }}
+    if: false
     name: build rustdesk ios ipa
     runs-on: ${{ matrix.job.os }}
     strategy:
@@ -603,6 +680,7 @@ jobs:
       #       flutter/build/ios/ipa/*.ipa
 
   build-for-macOS:
+    if: false
     name: ${{ matrix.job.target }}
     runs-on: ${{ matrix.job.os }}
     strategy:
@@ -823,9 +901,11 @@ jobs:
           files: rustdesk-${{ env.VERSION }}-unsigned.tar.gz
 
   generate-bridge-linux:
+    if: false
     uses: ./.github/workflows/bridge.yml
 
   build-rustdesk-android:
+    if: false
     needs: [generate-bridge-linux]
     name: build rustdesk android apk ${{ matrix.job.target }}
     runs-on: ${{ matrix.job.os }}
@@ -1285,6 +1365,7 @@ jobs:
             signed-apk/rustdesk-${{ env.VERSION }}-universal${{ env.suffix }}.apk
 
   build-rustdesk-linux:
+    if: false
     needs: [generate-bridge-linux]
     name: build rustdesk linux ${{ matrix.job.target }}
     runs-on: ${{ matrix.job.on }}
