@@ -2,7 +2,7 @@ use super::*;
 use scrap::codec::Quality;
 use std::time::Duration;
 pub const FPS: u32 = 30;
-pub const MIN_FPS: u32 = 1;
+pub const MIN_FPS: u32 = 5;
 pub const MAX_FPS: u32 = 120;
 trait Percent {
     fn as_percent(&self) -> u32;

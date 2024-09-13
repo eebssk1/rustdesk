@@ -204,7 +204,7 @@ lto = true
 codegen-units = 1
 panic = 'abort'
 strip = true
-#opt-level = 'z' # only have smaller size after strip
+opt-level = 3 # only have smaller size after strip
 rpath = true
 
 [profile.dev]
