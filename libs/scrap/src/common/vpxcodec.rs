@@ -69,10 +69,10 @@ impl EncoderApi for VpxEncoder {
                 c.g_h = config.height;
                 c.g_timebase.num = 1;
                 c.g_timebase.den = 1000; // Output timestamp precision
-                c.rc_undershoot_pct = 95;
+                c.rc_undershoot_pct = 89;
                 // When the data buffer falls below this percentage of fullness, a dropped frame is indicated. Set the threshold to zero (0) to disable this feature.
                 // In dynamic scenes, low bitrate gets low fps while high bitrate gets high fps.
-                c.rc_dropframe_thresh = 25;
+                c.rc_dropframe_thresh = 12;
                 c.g_threads = codec_thread_num(64) as _;
                 c.g_error_resilient = VPX_ERROR_RESILIENT_DEFAULT;
                 // https://developers.google.com/media/vp9/bitrate-modes/
@@ -94,7 +94,7 @@ impl EncoderApi for VpxEncoder {
                     c.rc_max_quantizer = DEFAULT_QP_MAX;
                 }
                 let base_bitrate = base_bitrate(config.width as _, config.height as _);
-                let bitrate = base_bitrate * b / 100;
+                let bitrate = base_bitrate * b / 100 + 68;
                 if bitrate > 0 {
                     c.rc_target_bitrate = bitrate;
                 } else {
@@ -141,7 +141,7 @@ impl EncoderApi for VpxEncoder {
                     Higher numbers (7 or 8) will be lower quality but more manageable for lower latency
                     use cases and also for lower CPU power devices such as mobile.
                     */
-                    call_vpx!(vpx_codec_control_(&mut ctx, VP8E_SET_CPUUSED as _, 7,));
+                    call_vpx!(vpx_codec_control_(&mut ctx, VP8E_SET_CPUUSED as _, 8,));
                     // set row level multi-threading
                     /*
                     as some people in comments and below have already commented,
@@ -162,8 +162,14 @@ impl EncoderApi for VpxEncoder {
                     call_vpx!(vpx_codec_control_(
                         &mut ctx,
                         VP9E_SET_TILE_COLUMNS as _,
-                        4 as c_int
+                        5 as c_int
                     ));
+                    call_vpx!(vpx_codec_control_(
+                        &mut ctx,
+                        VP9E_SET_TILE_ROWS as _,
+                        1 as c_int
+                    ));
+
                 } else if config.codec == VpxVideoCodecId::VP8 {
                     // https://github.com/webmproject/libvpx/blob/972149cafeb71d6f08df89e91a0130d6a38c4b15/vpx/vp8cx.h#L172
                     // https://groups.google.com/a/webmproject.org/g/webm-discuss/c/DJhSrmfQ61M
@@ -219,7 +225,7 @@ impl EncoderApi for VpxEncoder {
             c.rc_min_quantizer = q_min;
             c.rc_max_quantizer = q_max;
         }
-        let bitrate = base_bitrate(self.width as _, self.height as _) * b / 100;
+        let bitrate = base_bitrate(self.width as _, self.height as _) * b / 100 + 68;
         if bitrate > 0 {
             c.rc_target_bitrate = bitrate;
         }
