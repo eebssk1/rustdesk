@@ -1,5 +1,5 @@
 [target.x86_64-pc-windows-msvc]
-rustflags = ["-Ctarget-feature=+crt-static", "-C", "target-cpu=x86-64-v2", "-C", "llvm-args=--enable-knowledge-retention=true --extra-vectorizer-passes=true --enable-loop-flatten=true --enable-gvn-hoist=true --enable-constraint-elimination=true --enable-dfa-jump-thread=true --enable-partial-inlining=true --enable-unroll-and-jam=true --enable-matrix=true --cost-kind=latency --enable-module-inliner=true"]
+rustflags = ["-Ctarget-feature=+crt-static", "-C", "target-cpu=ivybridge", "-C", "llvm-args=--enable-knowledge-retention=true --extra-vectorizer-passes=true --enable-loop-flatten=true --enable-gvn-hoist=true --enable-constraint-elimination=true --enable-dfa-jump-thread=true --enable-partial-inlining=true --enable-unroll-and-jam=true --enable-matrix=true --enable-module-inliner=true"]
 linker = "rust-lld"
 [target.i686-pc-windows-msvc]
 rustflags = ["-C", "target-feature=+crt-static", "-C", "link-args=/NODEFAULTLIB:MSVCRT"]

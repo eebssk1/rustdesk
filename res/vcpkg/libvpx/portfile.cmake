@@ -10,6 +10,7 @@ vcpkg_from_github(
         0002-Fix-nasm-debug-format-flag.patch
         0003-add-uwp-v142-and-v143-support.patch
         0004-remove-library-suffixes.patch
+        0005-extra-opt.patch
 )
 
 if(CMAKE_HOST_WIN32)
@@ -77,7 +78,6 @@ if(VCPKG_TARGET_IS_WINDOWS AND NOT VCPKG_TARGET_IS_MINGW)
     if("highbitdepth" IN_LIST FEATURES)
         set(OPTIONS "${OPTIONS} --enable-vp9-highbitdepth")
     endif()
-
     message(STATUS "Generating makefile")
     file(MAKE_DIRECTORY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-tmp")
     vcpkg_execute_required_process(
