@@ -166,7 +166,7 @@ impl EncoderApi for VpxEncoder {
                     call_vpx!(vpx_codec_control_(
                         &mut ctx,
                         VP9E_SET_NOISE_SENSITIVITY as _,
-                        2 as c_int
+                        1 as c_int
                     ));
                     call_vpx!(vpx_codec_control_(
                         &mut ctx,
@@ -181,17 +181,17 @@ impl EncoderApi for VpxEncoder {
                     call_vpx!(vpx_codec_control_(
                         &mut ctx,
                         VP8E_SET_SHARPNESS as _,
-                        2 as c_int
+                        3 as c_int
                     ));
                     call_vpx!(vpx_codec_control_(
                         &mut ctx,
                         VP8E_SET_ARNR_MAXFRAMES as _,
-                        5 as c_int
+                        3 as c_int
                     ));
                     call_vpx!(vpx_codec_control_(
                         &mut ctx,
                         VP8E_SET_ARNR_STRENGTH as _,
-                        3 as c_int
+                        2 as c_int
                     ));
                 } else if config.codec == VpxVideoCodecId::VP8 {
                     // https://github.com/webmproject/libvpx/blob/972149cafeb71d6f08df89e91a0130d6a38c4b15/vpx/vp8cx.h#L172
