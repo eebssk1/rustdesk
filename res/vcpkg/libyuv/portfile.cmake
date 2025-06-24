@@ -42,7 +42,7 @@ if (VCPKG_DETECTED_CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND NOT VCPKG_TARGET_IS
 
     message(STATUS "Using clang target ${CLANG_TARGET}")
 
-    set(EXTRA_FLG "/clang:-march=ivybridge /clang:-mllvm /clang:--enable-knowledge-retention=true /clang:-mllvm /clang:--extra-vectorizer-passes=true /clang:-mllvm /clang:--enable-gvn-hoist=true /clang:-mllvm /clang:--enable-constraint-elimination=true /clang:-mllvm /clang:--enable-dfa-jump-thread=true /clang:-mllvm /clang:--enable-partial-inlining=true")
+    set(EXTRA_FLG " /clang:-march=haswell /clang:-mllvm /clang:--enable-knowledge-retention=true /clang:-mllvm /clang:--extra-vectorizer-passes=true /clang:-mllvm /clang:--enable-gvn-hoist=true /clang:-mllvm /clang:--enable-constraint-elimination=true /clang:-mllvm /clang:--enable-dfa-jump-thread=true /clang:-mllvm /clang:--enable-partial-inlining=true")
 
     string(APPEND VCPKG_DETECTED_CMAKE_CXX_FLAGS --target=${CLANG_TARGET})
     string(APPEND VCPKG_DETECTED_CMAKE_C_FLAGS --target=${CLANG_TARGET})
