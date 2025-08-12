@@ -540,6 +540,12 @@ class _GeneralState extends State<_General> {
             'Capture screen using DirectX',
             kOptionDirectxCapture,
           ),
+        _OptionCheckBox(
+          context,
+          'TCP mode',
+          kOptionEnableTcpMode,
+          isServer: false,
+        ),
         if (!bind.isIncomingOnly()) ...[
           _OptionCheckBox(
             context,

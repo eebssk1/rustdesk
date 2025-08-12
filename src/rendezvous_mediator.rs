@@ -396,6 +396,18 @@ impl RendezvousMediator {
         Ok(())
     }
 
+    pub fn is_tcp_enabled() -> bool {
+        let option_tcp = Config::get_option("enable-tcp-mode");
+
+        println!("enable-tcp-mode: {}", option_tcp);
+
+        if option_tcp == "Y" {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     pub async fn start(server: ServerPtr, host: String) -> ResultType<()> {
         log::info!("start rendezvous mediator of {}", host);
         //If the investment agent type is http or https, then tcp forwarding is enabled.
@@ -403,6 +415,7 @@ impl RendezvousMediator {
             || Config::is_proxy()
             || use_ws()
             || crate::is_udp_disabled()
+            || Self::is_tcp_enabled()
         {
             Self::start_tcp(server, host).await
         } else {
