@@ -211,6 +211,13 @@ string(APPEND VCPKG_COMBINED_C_FLAGS_RELEASE " -I \"${CURRENT_INSTALLED_DIR}/inc
 if(VCPKG_TARGET_IS_WINDOWS)
     string(APPEND VCPKG_COMBINED_C_FLAGS_DEBUG " -I \"${CURRENT_INSTALLED_DIR}/include/mfx\"")
     string(APPEND VCPKG_COMBINED_C_FLAGS_RELEASE " -I \"${CURRENT_INSTALLED_DIR}/include/mfx\"")
+    if(NOT VCPKG_BUILD_TYPE OR VCPKG_BUILD_TYPE STREQUAL "release")
+        if(VCPKG_DETECTED_MSVC)
+            if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+                string(APPEND VCPKG_COMBINED_C_FLAGS_RELEASE " /favor:INTEL64 /d2AlignFuncs /d2archSSE42 /Qpar /GS- /GR-")
+            endif()
+        endif()
+    endif()
 endif()
 
 # # Setup vcpkg toolchain

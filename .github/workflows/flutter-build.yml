@@ -59,7 +59,7 @@ env:
   SIGN_BASE_URL: "${{ secrets.SIGN_BASE_URL }}"
   ST_CERT: "${{ secrets.ST_CERT }}"
   ZIP_PASS: "${{ secrets.ZIP_PASS }}"
-  W64OPT: "/favor:INTEL64 /arch:SSE4.2 /Qpar"
+  W64OPT: "/favor:INTEL64 /d2AlignFuncs /d2archSSE42 /Qpar /GS- /GR-"
 
 jobs:
   generate-bridge:
