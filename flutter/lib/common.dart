@@ -1585,7 +1585,8 @@ String bool2option(String option, bool b) {
   String res;
   if (option.startsWith('enable-') &&
       option != kOptionEnableUdpPunch &&
-      option != kOptionEnableIpv6Punch) {
+      option != kOptionEnableIpv6Punch &&
+      option != kOptionEnableTcpMode) {
     res = b ? defaultOptionYes : 'N';
   } else if (option.startsWith('allow-') ||
       option == kOptionStopService ||
@@ -1593,7 +1594,7 @@ String bool2option(String option, bool b) {
       option == kOptionForceAlwaysRelay) {
     res = b ? 'Y' : defaultOptionNo;
   } else {
-    if (option != kOptionEnableUdpPunch && option != kOptionEnableIpv6Punch) {
+    if (option != kOptionEnableUdpPunch && option != kOptionEnableIpv6Punch && option != kOptionEnableTcpMode) {
       assert(false);
     }
     res = b ? 'Y' : 'N';
